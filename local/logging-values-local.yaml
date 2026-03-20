@@ -1,0 +1,62 @@
+# Local overrides for logging.
+# Reduces Elasticsearch to single-node and lowers resource usage.
+# Note: ES JVM needs ~1.5GB minimum to avoid OOMKill on Docker Desktop.
+
+master:
+  replicas: 1
+  heapSize: 512m
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1536Mi
+    requests:
+      cpu: 100m
+      memory: 768Mi
+  persistence:
+    storageClass: hostpath
+    size: 5Gi
+
+data:
+  replicas: 1
+  heapSize: 512m
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1536Mi
+    requests:
+      cpu: 100m
+      memory: 768Mi
+  persistence:
+    storageClass: hostpath
+    size: 5Gi
+
+coordinating:
+  replicas: 1
+  heapSize: 256m
+  resources:
+    limits:
+      cpu: 200m
+      memory: 768Mi
+    requests:
+      cpu: 50m
+      memory: 256Mi
+
+ingest:
+  replicas: 1
+  heapSize: 256m
+  resources:
+    limits:
+      cpu: 200m
+      memory: 768Mi
+    requests:
+      cpu: 50m
+      memory: 256Mi
+
+kibana:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 256Mi

@@ -1,0 +1,72 @@
+# Local overrides for monitoring/values.yaml
+# Reduces resource requests/limits and swaps nfs-csi for default storage class.
+
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+grafana:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  persistence:
+    storageClassName: hostpath
+    size: 1Gi
+
+prometheus:
+  prometheusSpec:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1024Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    retention: 2d
+    retentionSize: 5GiB
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 5Gi
+          storageClassName: hostpath
+
+prometheusOperator:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+kube-state-metrics:
+  resources:
+    limits:
+      cpu: 50m
+      memory: 128Mi
+    requests:
+      cpu: 25m
+      memory: 64Mi
+
+prometheus-node-exporter:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 50Mi
+    requests:
+      cpu: 25m
+      memory: 16Mi

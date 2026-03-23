@@ -2,9 +2,17 @@
 # Local development setup using Docker Desktop Kubernetes (or kind).
 # Installs infrastructure components required before deploying MOSIP.
 #
+# Architecture note (see MOSIP deployment architecture diagram):
+#   Production has two clusters: MOSIP cluster + Rancher+IAM (observation) cluster.
+#   For local dev we collapse both into a single Docker Desktop cluster.
+#   - ingress-nginx replaces the Istio public/internal ingress gateways
+#   - nginx reverse proxy replaces the LB/Nginx layer in front of the cluster
+#   - Rancher + observation Keycloak are skipped (not needed for local dev)
+#   - MOSIP's own Keycloak is deployed via mosip-infra install-external.sh
+#
 # Profiles (pick one based on available RAM):
-#   minimal  — ingress-nginx only (~200MB). Sufficient for MOSIP.
-#   dev      — + nginx reverse proxy + monitoring (~2GB)
+#   minimal  — ingress-nginx + nginx reverse proxy (~300MB)
+#   dev      — + monitoring (~2GB)
 #   all      — + logging (~4GB)
 #
 # Prerequisites:
@@ -12,9 +20,9 @@
 #   - helm, kubectl on PATH
 #
 # Usage: ./setup.sh [profile|component|teardown]
-#   ./setup.sh minimal    # ingress-nginx only (recommended for <=16GB RAM)
-#   ./setup.sh dev        # ingress + nginx + monitoring
-#   ./setup.sh all        # everything including logging
+#   ./setup.sh minimal    # ingress + nginx (recommended for <=16GB RAM)
+#   ./setup.sh dev        # + monitoring
+#   ./setup.sh all        # + logging
 #   ./setup.sh ingress    # install only ingress-nginx
 #   ./setup.sh nginx      # install nginx reverse proxy
 #   ./setup.sh monitoring
@@ -164,6 +172,7 @@ case "$COMPONENT" in
   minimal)
     add_helm_repos
     install_ingress
+    install_nginx
     ;;
   dev)
     add_helm_repos
@@ -199,8 +208,8 @@ case "$COMPONENT" in
     echo "Usage: $0 [minimal|dev|all|ingress|nginx|monitoring|logging|teardown]"
     echo ""
     echo "Profiles:"
-    echo "  minimal  — ingress-nginx only (~200MB RAM)"
-    echo "  dev      — + nginx + monitoring (~2GB RAM)"
+    echo "  minimal  — ingress-nginx + nginx reverse proxy (~300MB RAM)"
+    echo "  dev      — + monitoring (~2GB RAM)"
     echo "  all      — + logging (~4GB RAM)"
     echo ""
     echo "For MOSIP components, see mosip-infra/deployment/v3/local/"

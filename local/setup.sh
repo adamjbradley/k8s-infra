@@ -85,19 +85,6 @@ install_nginx() {
   echo "  Access: http://localhost:30000"
 }
 
-install_keycloak() {
-  echo "=== Installing Keycloak (local) ==="
-  # Uses official quay.io/keycloak/keycloak image in dev mode (embedded H2 DB).
-  # Bitnami chart images are no longer available on Docker Hub.
-  kubectl apply -f "$SCRIPT_DIR/keycloak-local.yaml"
-  kubectl -n keycloak rollout status deploy/keycloak --timeout=180s
-  echo "Keycloak installed."
-  echo "  Admin console: kubectl -n keycloak port-forward svc/keycloak 8080:80"
-  echo "  Then open: http://localhost:8080"
-  echo "  Credentials: admin / admin"
-  echo "  Or via ingress: http://iam.localhost:30080 (add '127.0.0.1 iam.localhost' to hosts file)"
-}
-
 install_monitoring() {
   echo "=== Installing Monitoring (local) ==="
   local NS=cattle-monitoring-system
@@ -155,12 +142,10 @@ teardown() {
   helm uninstall rancher-logging      -n cattle-logging-system    2>/dev/null || true
   helm uninstall rancher-logging-crd  -n cattle-logging-system    2>/dev/null || true
   helm uninstall elasticsearch        -n cattle-logging-system    2>/dev/null || true
-  kubectl delete -f "$SCRIPT_DIR/keycloak-local.yaml"            2>/dev/null || true
   helm uninstall rancher-monitoring   -n cattle-monitoring-system 2>/dev/null || true
   helm uninstall rancher-monitoring-crd -n cattle-monitoring-system 2>/dev/null || true
   helm uninstall ingress-nginx        -n ingress-nginx            2>/dev/null || true
   kubectl delete -f "$SCRIPT_DIR/nginx-local.yaml"               2>/dev/null || true
-  kubectl delete namespace keycloak                 2>/dev/null || true
   kubectl delete namespace cattle-logging-system    2>/dev/null || true
   kubectl delete namespace cattle-monitoring-system 2>/dev/null || true
   kubectl delete namespace ingress-nginx            2>/dev/null || true
@@ -200,10 +185,6 @@ case "$COMPONENT" in
     ;;
   nginx)
     install_nginx
-    ;;
-  keycloak)
-    add_helm_repos
-    install_keycloak
     ;;
   monitoring)
     add_helm_repos

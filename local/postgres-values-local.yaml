@@ -8,11 +8,11 @@ primary:
     max_replication_slots=3
   resources:
     limits:
-      cpu: 500m
-      memory: 1024Mi
-    requests:
-      cpu: 200m
+      cpu: 300m
       memory: 512Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
   persistence:
     storageClass: hostpath
     size: 8Gi

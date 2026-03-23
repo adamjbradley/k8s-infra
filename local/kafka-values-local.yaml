@@ -8,10 +8,10 @@ persistence:
 resources:
   limits:
     cpu: 500m
-    memory: 1536Mi
-  requests:
-    cpu: 100m
     memory: 768Mi
+  requests:
+    cpu: 10m
+    memory: 128Mi
 auth:
   clientProtocol: plaintext
   interBrokerProtocol: plaintext

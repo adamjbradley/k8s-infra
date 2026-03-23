@@ -191,6 +191,17 @@ case "$COMPONENT" in
     add_helm_repos
     install_logging
     ;;
+  mosip-external)
+    add_helm_repos
+    bash "$SCRIPT_DIR/mosip-external.sh" all
+    ;;
+  mosip-services)
+    add_helm_repos
+    bash "$SCRIPT_DIR/mosip-services.sh" all
+    ;;
+  mosip-status)
+    bash "$SCRIPT_DIR/mosip-services.sh" status
+    ;;
   all)
     add_helm_repos
     install_ingress
@@ -202,6 +213,9 @@ case "$COMPONENT" in
   *)
     echo "Unknown component: $COMPONENT"
     echo "Usage: $0 [all|ingress|nginx|keycloak|monitoring|logging|teardown]"
+    echo "       $0 mosip-external    # install MOSIP external components"
+    echo "       $0 mosip-services    # install MOSIP core services"
+    echo "       $0 mosip-status      # check MOSIP service health"
     exit 1
     ;;
 esac

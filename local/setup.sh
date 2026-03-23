@@ -1,24 +1,27 @@
 #!/bin/bash
 # Local development setup using Docker Desktop Kubernetes (or kind).
-# This script installs a minimal subset of the infra stack locally:
-#   1. ingress-nginx (NodePort)
-#   2. nginx reverse proxy (in-cluster, fronting ingress-nginx)
-#   3. monitoring (Prometheus + Grafana) with reduced resources
-#   4. logging (Elasticsearch + Kibana + logging operator) with reduced resources
-#   5. keycloak (single replica with embedded PostgreSQL)
+# Installs infrastructure components required before deploying MOSIP.
+#
+# Profiles (pick one based on available RAM):
+#   minimal  — ingress-nginx only (~200MB). Sufficient for MOSIP.
+#   dev      — + nginx reverse proxy + monitoring (~2GB)
+#   all      — + logging (~4GB)
 #
 # Prerequisites:
 #   - Docker Desktop with Kubernetes enabled, OR kind installed
 #   - helm, kubectl on PATH
 #
-# Usage: ./setup.sh [component]
-#   ./setup.sh          # install all components
-#   ./setup.sh ingress  # install only ingress-nginx
-#   ./setup.sh nginx    # install nginx reverse proxy
-#   ./setup.sh keycloak # install keycloak + embedded postgres
+# Usage: ./setup.sh [profile|component|teardown]
+#   ./setup.sh minimal    # ingress-nginx only (recommended for <=16GB RAM)
+#   ./setup.sh dev        # ingress + nginx + monitoring
+#   ./setup.sh all        # everything including logging
+#   ./setup.sh ingress    # install only ingress-nginx
+#   ./setup.sh nginx      # install nginx reverse proxy
 #   ./setup.sh monitoring
 #   ./setup.sh logging
-#   ./setup.sh teardown # remove everything
+#   ./setup.sh teardown   # remove everything
+#
+# For MOSIP components, see mosip-infra/deployment/v3/local/
 
 set -e
 set -o errexit
@@ -172,6 +175,25 @@ case "$COMPONENT" in
   teardown)
     teardown
     ;;
+  # --- profiles ---
+  minimal)
+    add_helm_repos
+    install_ingress
+    ;;
+  dev)
+    add_helm_repos
+    install_ingress
+    install_nginx
+    install_monitoring
+    ;;
+  all)
+    add_helm_repos
+    install_ingress
+    install_nginx
+    install_monitoring
+    install_logging
+    ;;
+  # --- individual components ---
   ingress)
     add_helm_repos
     install_ingress
@@ -191,17 +213,14 @@ case "$COMPONENT" in
     add_helm_repos
     install_logging
     ;;
-  all)
-    add_helm_repos
-    install_ingress
-    install_nginx
-    install_keycloak
-    install_monitoring
-    install_logging
-    ;;
   *)
     echo "Unknown component: $COMPONENT"
-    echo "Usage: $0 [all|ingress|nginx|keycloak|monitoring|logging|teardown]"
+    echo "Usage: $0 [minimal|dev|all|ingress|nginx|monitoring|logging|teardown]"
+    echo ""
+    echo "Profiles:"
+    echo "  minimal  — ingress-nginx only (~200MB RAM)"
+    echo "  dev      — + nginx + monitoring (~2GB RAM)"
+    echo "  all      — + logging (~4GB RAM)"
     echo ""
     echo "For MOSIP components, see mosip-infra/deployment/v3/local/"
     exit 1

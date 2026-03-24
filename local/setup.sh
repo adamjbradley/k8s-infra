@@ -12,8 +12,8 @@
 #
 # Profiles (pick one based on available RAM):
 #   minimal  — ingress-nginx + nginx reverse proxy (~300MB)
-#   dev      — + monitoring (~2GB)
-#   all      — + logging (~4GB)
+#   dev      — + headlamp + monitoring (~2GB)
+#   all      — + headlamp + monitoring + logging (~4GB)
 #
 # Prerequisites:
 #   - Docker Desktop with Kubernetes enabled, OR kind installed
@@ -25,6 +25,7 @@
 #   ./setup.sh all        # + logging
 #   ./setup.sh ingress    # install only ingress-nginx
 #   ./setup.sh nginx      # install nginx reverse proxy
+#   ./setup.sh headlamp
 #   ./setup.sh monitoring
 #   ./setup.sh logging
 #   ./setup.sh teardown   # remove everything
@@ -69,6 +70,7 @@ add_helm_repos() {
   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts 2>/dev/null || true
   helm repo add mosip https://mosip.github.io/mosip-helm 2>/dev/null || true
   helm repo add bitnami https://charts.bitnami.com/bitnami 2>/dev/null || true
+  helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/ 2>/dev/null || true
   helm repo update
 }
 
@@ -145,6 +147,21 @@ install_logging() {
   echo "  Kibana: kubectl -n $NS port-forward svc/elasticsearch-kibana 5601:5601"
 }
 
+install_headlamp() {
+  echo "=== Installing Headlamp dashboard (local) ==="
+  local NS=headlamp
+  kubectl create namespace "$NS" 2>/dev/null || true
+
+  helm upgrade --install headlamp headlamp/headlamp \
+    -n "$NS" \
+    -f "$INFRA_DIR/headlamp/values.yaml" \
+    -f "$SCRIPT_DIR/headlamp-values-local.yaml" \
+    --wait
+  echo "Headlamp installed."
+  echo "  Dashboard: kubectl -n $NS port-forward svc/headlamp 8080:80"
+  echo "  Then open: http://localhost:8080"
+}
+
 teardown() {
   echo "=== Tearing down local stack ==="
   helm uninstall rancher-logging      -n cattle-logging-system    2>/dev/null || true
@@ -152,10 +169,12 @@ teardown() {
   helm uninstall elasticsearch        -n cattle-logging-system    2>/dev/null || true
   helm uninstall rancher-monitoring   -n cattle-monitoring-system 2>/dev/null || true
   helm uninstall rancher-monitoring-crd -n cattle-monitoring-system 2>/dev/null || true
+  helm uninstall headlamp             -n headlamp                  2>/dev/null || true
   helm uninstall ingress-nginx        -n ingress-nginx            2>/dev/null || true
   kubectl delete -f "$SCRIPT_DIR/nginx-local.yaml"               2>/dev/null || true
   kubectl delete namespace cattle-logging-system    2>/dev/null || true
   kubectl delete namespace cattle-monitoring-system 2>/dev/null || true
+  kubectl delete namespace headlamp                 2>/dev/null || true
   kubectl delete namespace ingress-nginx            2>/dev/null || true
   echo "Teardown complete."
 }
@@ -178,12 +197,14 @@ case "$COMPONENT" in
     add_helm_repos
     install_ingress
     install_nginx
+    install_headlamp
     install_monitoring
     ;;
   all)
     add_helm_repos
     install_ingress
     install_nginx
+    install_headlamp
     install_monitoring
     install_logging
     ;;
@@ -203,14 +224,18 @@ case "$COMPONENT" in
     add_helm_repos
     install_logging
     ;;
+  headlamp)
+    add_helm_repos
+    install_headlamp
+    ;;
   *)
     echo "Unknown component: $COMPONENT"
-    echo "Usage: $0 [minimal|dev|all|ingress|nginx|monitoring|logging|teardown]"
+    echo "Usage: $0 [minimal|dev|all|ingress|nginx|headlamp|monitoring|logging|teardown]"
     echo ""
     echo "Profiles:"
     echo "  minimal  — ingress-nginx + nginx reverse proxy (~300MB RAM)"
-    echo "  dev      — + monitoring (~2GB RAM)"
-    echo "  all      — + logging (~4GB RAM)"
+    echo "  dev      — + headlamp + monitoring (~2GB RAM)"
+    echo "  all      — + headlamp + monitoring + logging (~4GB RAM)"
     echo ""
     echo "For MOSIP components, see mosip-infra/deployment/v3/local/"
     exit 1

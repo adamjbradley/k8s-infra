@@ -1,0 +1,14 @@
+# Local overrides for headlamp — minimal resource footprint.
+
+replicaCount: 1
+
+config:
+  inCluster: true
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi

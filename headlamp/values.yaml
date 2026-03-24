@@ -1,0 +1,39 @@
+# Headlamp — lightweight Kubernetes dashboard
+# Chart: headlamp/headlamp
+# Docs: https://headlamp.dev/docs/latest/installation/in-cluster/
+
+replicaCount: 1
+
+config:
+  inCluster: true
+  pluginDir: /headlamp/plugins
+
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  # To expose via ingress, set enabled: true and configure below.
+  # className: nginx
+  # annotations: {}
+  # hosts:
+  #   - host: headlamp.sandbox.xyz.net
+  #     paths:
+  #       - path: /
+  #         pathType: Prefix
+  # tls: []
+
+# OIDC auth via Keycloak (configure per environment).
+# config:
+#   oidc:
+#     clientID: headlamp
+#     clientSecret: <your-secret>
+#     issuerURL: https://keycloak.sandbox.xyz.net/realms/master
+#     scopes: openid,profile,email

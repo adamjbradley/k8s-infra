@@ -18,6 +18,7 @@ function installing_headlamp() {
 
   echo Installing Headlamp
   helm -n $NS install headlamp headlamp/headlamp \
+  --version 0.39.0 \
   -f values.yaml
 
   echo Installed Headlamp

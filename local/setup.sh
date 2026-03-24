@@ -154,6 +154,7 @@ install_headlamp() {
 
   helm upgrade --install headlamp headlamp/headlamp \
     -n "$NS" \
+    --version 0.39.0 \
     -f "$INFRA_DIR/headlamp/values.yaml" \
     -f "$SCRIPT_DIR/headlamp-values-local.yaml" \
     --wait

@@ -7,6 +7,7 @@ replicaCount: 1
 config:
   inCluster: true
   pluginDir: /headlamp/plugins
+  sessionTTL: null  # chart 0.40.1 bug: -session-ttl flag not recognised by image
 
 serviceAccount:
   create: true

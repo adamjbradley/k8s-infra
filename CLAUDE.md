@@ -76,7 +76,7 @@ All scripts support tiered profiles. Pick based on available RAM:
 | RAM | k8s-infra | mosip-infra external | mosip-infra services | What you get |
 |-----|-----------|---------------------|---------------------|-------------|
 | **8GB** | `./setup.sh minimal` | `./install-external.sh minimal` | `./install-services.sh minimal` | Identity store + kernel APIs |
-| **16GB** | `./setup.sh dev` | `./install-external.sh core` | `./install-services.sh core` | + ID verification + data pipeline |
+| **16GB** | `./setup.sh dev` | `./install-external.sh poc` | `./install-services.sh poc` | + ID verification + data pipeline |
 | **24GB+** | `./setup.sh all` | `./install-external.sh all` | `./install-services.sh all` | Full stack incl. registration + portals |
 
 Profiles are additive — running `core` after `minimal` adds services without reinstalling.
